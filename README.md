@@ -6,10 +6,16 @@ R script for team "mark12" to win The Quicksolver hackathon on Analytics Vidhya 
 
 In short, features were created using Matt Dowle's data.table package and the modeling was done with three H2O models: random forest and two GBMs.
 
-The progression of the models is actually represented in the way the features are laid out. The initial submission scored 1.94 on the public leaderboard (similar to private) and spanned the first six target encodings, no IDs, only the three Article features directly. Over time, I kept adding more (including a pair that surprisingly reduced model quality) all the way to the end. Light experimentation on the modeling hyperparameters, which are likely underfit. Random forest wound up my strongest model, most likely due to lack of internal CV of the GBMs that led to me staying fairly careful.
+The progression of the models is actually represented in the way the features are laid out. The initial submission scored 1.94 on the public leaderboard (which scored very close to private) and was quickly tuned to about 1.82. This spanned the first six target encodings, no IDs, only the three Article features directly. Over time, I kept adding more (including a pair that surprisingly reduced model quality) all the way to the end. Light experimentation on the modeling hyperparameters, which are likely underfit. Random forest wound up my strongest model, most likely due to lack of internal CV of the GBMs that led to me staying fairly careful.
 
 Feel free to add an Issue if you have a question.
 ~Mark
+
+### Software
+I used R (3.3.1) via RStudio (1.0.136) on a 2014 Macbook Pro (i7, 16GB RAM) and the following three libraries:
+* library(data.table) ## data.table 1.10.0
+* library(h2o)  ## I used version 3.11.0.3784, which is quite old
+* library(bit64)
 
 ### Features
 I kept the User and Article IDs out of the modeling from the start. At one point I used the most frequent User_ID values, but this did not help - the models were already picking up enough of the user qualities. The main feature style is target encoding, so in the code you will see sets of three lines that calculate the sum of response, count of records, and then performs an average that removes the impact of the record to which it is applying the "average". Data.table makes the syntax concise and thus easy to overlook what is happening.
