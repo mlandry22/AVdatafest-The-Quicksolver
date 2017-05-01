@@ -21,6 +21,13 @@ I used R (3.3.1) via RStudio (1.0.136) on a 2014 Macbook Pro (i7, 16GB RAM) and 
 I kept the User and Article IDs out of the modeling from the start. At one point I used the most frequent User_ID values, but this did not help - the models were already picking up enough of the user qualities. The main feature style is target encoding, so in the code you will see sets of three lines that calculate the sum of response, count of records, and then performs an average that removes the impact of the record to which it is applying the "average". Data.table makes the syntax concise and thus easy to overlook what is happening.
 The data.table[i,j,by] statement is similar to a (WHERE, SELECT, GROUP BY) of sql. And data.table applies the results direclty to the data frame, even while grouping, similar to a windowed function in SQL (but far less cumbersome!). The special .N is a count of records.
 
+Exmple target encoding - little more than the average Rating per user:
+```r
+full[,nUser:=sum(Rating,na.rm=T),.(User_ID)]
+full[,dUser:=sum(set=="train",na.rm=T),.(User_ID)]
+full[,tgtUser:=ifelse(set=="train",(nUser-Rating)/(dUser-1),nUser/dUser)]
+```
+
 Similarly, from the comments of the code itself:
 ```
 ### The pattern is to sum up all the ratings per [feature(s)], and then count how many
@@ -55,4 +62,15 @@ Similarly, from the comments of the code itself:
 ###  is that I couldn't tune the models without making a submission. So, these models can
 ###  probably be improved--especially by dropping the learning rate and training for longer
 ###  which I never really wanted to do.
+```
+
+### Ensembling
+I typically prefer to use all my time working on features. But ensembling is an easy way to improve the score a little bit as well as make your single AV submission a bit more robust. With my (lack of) validation method, I could not have used stacking. So I just used simple fractional blends. Mostly I used two GBMs at 50/50 for slight improvements. After I added the final random forest model and it outscored my GBMs, I added it to the blend with a rough estimate of 60/20/20.
+
+```r
+fwrite(blend1[,.(ID,Rating=
+                   (blend1$Rating*0.2
+                    +blend2$Rating*0.2
+                    +blend3$Rating*0.6
+                   ))],"blend5.csv")
 ```
